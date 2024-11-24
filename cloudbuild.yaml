@@ -13,16 +13,26 @@ steps:
     args:
       - '-c'
       - |
+        echo "Generating SSH key for Cloud Build..."
+        # Generate a new SSH key pair for Cloud Build
+        ssh-keygen -t rsa -f /builder/home/.ssh/id_rsa -N "" -q
+        # Add the public key to the Compute Engine instance's metadata
+        gcloud compute instances add-metadata jashan-backend-vm \
+          --zone=us-central1-a \
+          --metadata=ssh-keys="$(cat /builder/home/.ssh/id_rsa.pub)"
+        
         echo "Updating backend container on Compute Engine..."
+        # SSH into the Compute Engine instance and update the Docker container
         gcloud compute ssh jashan-backend-vm \
           --zone=us-central1-a \
-          --ssh-key-file=cloudbuild-key \
+          --ssh-key-file=/builder/home/.ssh/id_rsa \
           --command="
-          sudo docker stop backend-container || true && \
-          sudo docker rm backend-container || true && \
-          sudo docker pull us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA} && \
-          sudo docker run -d -p 5000:5000 --name backend-container us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}
+            sudo docker stop backend-container || true && \
+            sudo docker rm backend-container || true && \
+            sudo docker pull us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA} && \
+            sudo docker run -d -p 5000:5000 --name backend-container us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}
           "
+
 options:
   logging: CLOUD_LOGGING_ONLY
 
