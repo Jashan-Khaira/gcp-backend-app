@@ -21,6 +21,8 @@ steps:
           sudo docker pull us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA} && \
           sudo docker run -d -p 5000:5000 --name backend-container us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}
           "
+options:
+  logging: CLOUD_LOGGING_ONLY
 
 # Specify the built image in the `images` section
 images:
