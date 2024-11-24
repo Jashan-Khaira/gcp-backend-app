@@ -15,12 +15,16 @@ steps:
     args:
       - 'compute'
       - 'ssh'
-      - '--zone=${_ZONE}'  # Use custom substitution here
+      - '--zone=${_ZONE}'  # Use custom substitution for zone
       - '--project=${PROJECT_ID}'
       - '--command=gcloud compute instances describe jashan-backend-vm --zone=${_ZONE} --project=${PROJECT_ID} && docker pull gcr.io/${PROJECT_ID}/flask-app:${SHORT_SHA} && docker stop flask-container && docker rm flask-container && docker run -d --name flask-container -p 5000:5000 gcr.io/${PROJECT_ID}/flask-app:${SHORT_SHA}'
     env:
       - 'CLOUDSDK_CORE_PROJECT=${PROJECT_ID}'
     id: 'deploy-to-instance'
+
+# Specify logging options
+options:
+  logging: CLOUD_LOGGING_ONLY
 
 images:
   - 'gcr.io/${PROJECT_ID}/flask-app:${SHORT_SHA}'
