@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Application - Jashanpreet Singh</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #frontend {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .student-info {
+            margin-top: 20px;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Frontend Application</h1>
+    <button onclick="getBackend()">Fetch Backend Data</button>
+    <p id="frontend"></p>
+    <div class="student-info">
+        <p>Created by: Jashanpreet Singh</p>
+        <p>Student ID: 100946316</p>
+    </div>
+    <script>
+        function getBackend() {
+            const url = 'https://flask-backend-851164891096.northamerica-northeast2.run.app';
+            fetch(url)
+            .then(response => response.json())
+            .then(json => {
+                console.log(json);
+                document.getElementById("frontend").innerHTML = JSON.stringify(json, null, 2);
+            })
+            .catch(error => {
+                console.error('Error fetching backend data:', error);
+                document.getElementById("frontend").innerHTML = "Error fetching data. Please try again.";
+            });
+        }
+    </script>
+</body>
+</html>
