@@ -7,14 +7,16 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}']
 
-  # Step 3: SSH into the Compute Engine instance and update the running container
+  # Step 3: SSH into Compute Engine and update the container
   - name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: 'bash'
+    entrypoint: bash
     args:
       - '-c'
       - |
+        echo "Updating backend container on Compute Engine..."
         gcloud compute ssh jashan-backend-vm \
           --zone=us-central1-a \
+          --ssh-key-file=cloudbuild-key \
           --command="
           sudo docker stop backend-container || true && \
           sudo docker rm backend-container || true && \
@@ -24,6 +26,5 @@ steps:
 options:
   logging: CLOUD_LOGGING_ONLY
 
-# Specify the built image in the `images` section
 images:
   - 'us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}'
