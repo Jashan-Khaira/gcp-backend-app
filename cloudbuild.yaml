@@ -19,5 +19,9 @@ steps:
       - 'CLOUDSDK_CORE_PROJECT=${PROJECT_ID}'
     id: 'deploy-to-instance'
 
+# Specify logging options
+options:
+  logging: CLOUD_LOGGING_ONLY
+
 images:
   - 'gcr.io/${PROJECT_ID}/flask-app:${SHORT_SHA}'
