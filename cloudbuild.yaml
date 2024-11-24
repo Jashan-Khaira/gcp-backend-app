@@ -1,13 +1,13 @@
 steps:
-  # Build the container image
+  # Step 1: Build the container image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-central1-docker.pkg.dev/${PROJECT_ID}/jashan-backend-repo/jashan-backend:${SHORT_SHA}', '.']
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}', '.']
 
-  # Push the container image to Artifact Registry
+  # Step 2: Push the container image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/${PROJECT_ID}/jashan-backend-repo/jashan-backend:${SHORT_SHA}']
+    args: ['push', 'us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}']
 
-  # Deploy container image to Cloud Run
+  # Step 3: Deploy container image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -15,17 +15,15 @@ steps:
       - 'deploy'
       - 'jashan-backend'
       - '--image'
-      - 'us-central1-docker.pkg.dev/${PROJECT_ID}/jashan-backend-repo/jashan-backend:${SHORT_SHA}'
+      - 'us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}'
       - '--region'
       - 'us-central1'
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
-      - '--zone'
-      - 'us-central1-a'
 
 options:
   logging: CLOUD_LOGGING_ONLY
 
 images:
-  - 'us-central1-docker.pkg.dev/${PROJECT_ID}/jashan-backend-repo/jashan-backend:${SHORT_SHA}'
+  - 'us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}'
