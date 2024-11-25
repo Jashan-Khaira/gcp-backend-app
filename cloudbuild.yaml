@@ -14,18 +14,32 @@ steps:
   # Step 3: SSH into Compute Engine and update the container
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
-    secretEnv: ['PRIVATE_KEY']
+    secretEnv: ['PRIVATE_KEY', 'PUBLIC_KEY']
     args:
       - '-c'
       - |
+        # Setup SSH keys
         echo "$$PRIVATE_KEY" | base64 -d > /workspace/id_rsa
+        echo "$$PUBLIC_KEY" | base64 -d > /workspace/id_rsa.pub
         chmod 600 /workspace/id_rsa
+        chmod 644 /workspace/id_rsa.pub
+        
+        # Setup SSH configuration
         mkdir -p ~/.ssh
-        ssh-keyscan -H jashan-backend-vm >> ~/.ssh/known_hosts
+        
+        # Get the VM's external IP address
+        VM_IP=$(gcloud compute instances describe jashan-backend-vm \
+          --zone=us-central1-a \
+          --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+        
+        # Add VM's IP to known hosts
+        ssh-keyscan -H $VM_IP >> ~/.ssh/known_hosts
+        
         echo "Updating backend container on Compute Engine..."
         gcloud compute ssh jashan-backend-vm \
           --zone=us-central1-a \
           --ssh-key-file=/workspace/id_rsa \
+          --strict-host-key-checking=no \
           --command="sudo docker stop backend-container || true && \
                     sudo docker rm backend-container || true && \
                     sudo docker pull us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA} && \
@@ -35,6 +49,8 @@ availableSecrets:
   secretManager:
     - versionName: projects/851164891096/secrets/my-ssh-private-key/versions/3
       env: 'PRIVATE_KEY'
+    - versionName: projects/851164891096/secrets/my-public-ssh-key/versions/1
+      env: 'PUBLIC_KEY'
 
 images:
   - 'us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}'
