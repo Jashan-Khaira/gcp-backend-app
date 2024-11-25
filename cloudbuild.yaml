@@ -9,36 +9,31 @@ steps:
 
   # Step 3: SSH into Compute Engine and update the container
   - name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: bash
+    entrypoint: 'bash'
     secretEnv: ['PRIVATE_KEY']
     args:
       - '-c'
       - |
-        # Decode the private key from the secret
-        echo "$PRIVATE_KEY" | base64 --decode > /workspace/id_rsa
+        echo "$$PRIVATE_KEY" | base64 -d > /workspace/id_rsa
         chmod 600 /workspace/id_rsa
-
-        # Add SSH key to known hosts
+        mkdir -p ~/.ssh
         ssh-keyscan -H jashan-backend-vm >> ~/.ssh/known_hosts
-
         echo "Updating backend container on Compute Engine..."
-        # SSH into the Compute Engine instance and update the Docker container
         gcloud compute ssh jashan-backend-vm \
           --zone=us-central1-a \
           --ssh-key-file=/workspace/id_rsa \
-          --command=" 
-            sudo docker stop backend-container || true && \
-            sudo docker rm backend-container || true && \
-            sudo docker pull us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA} && \
-            sudo docker run -d -p 5000:5000 --name backend-container us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}
-          "
+          --command="sudo docker stop backend-container || true && \
+                    sudo docker rm backend-container || true && \
+                    sudo docker pull us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA} && \
+                    sudo docker run -d -p 5000:5000 --name backend-container us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}"
 
-secrets:
-  - secretEnv:
-      PRIVATE_KEY: projects/851164891096/secrets/my-ssh-private-key/versions/3
-
-options:
-  logging: CLOUD_LOGGING_ONLY
+availableSecrets:
+  secretManager:
+    - versionName: projects/851164891096/secrets/my-ssh-private-key/versions/3
+      env: 'PRIVATE_KEY'
 
 images:
   - 'us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
