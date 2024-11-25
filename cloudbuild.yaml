@@ -37,10 +37,10 @@ steps:
           --strict-host-key-checking=no \
           --project=eng-oven-435418-i5 \
           --tunnel-through-iap \
-          --command="sudo docker stop backend-container || true && \
-                    sudo docker rm backend-container || true && \
-                    sudo docker pull us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA} && \
-                    sudo docker run -d -p 5000:5000 --name backend-container us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}"
+          --command="sudo docker stop jashan-backend || true && \
+                     sudo docker rm  jashan-backend  || true && \
+                     sudo docker pull us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA} && \
+                     sudo docker run -d -p 5000:5000 --name jashan-backend us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}"
 
 availableSecrets:
   secretManager:
