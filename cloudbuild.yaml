@@ -11,7 +11,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}']
 
-  # Step 3: SSH into Compute Engine and update the container
+   # Step 3: SSH into Compute Engine and update the container
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     secretEnv: ['PRIVATE_KEY', 'PUBLIC_KEY']
@@ -37,8 +37,9 @@ steps:
           --strict-host-key-checking=no \
           --project=eng-oven-435418-i5 \
           --tunnel-through-iap \
-          --command="sudo docker stop jashan-backend || true && \
-                     sudo docker rm  jashan-backend  || true && \
+          --command="sudo gcloud auth configure-docker us-central1-docker.pkg.dev && \
+                     sudo docker stop recursing_kalam || true && \
+                     sudo docker rm recursing_kalam || true && \
                      sudo docker pull us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA} && \
                      sudo docker run -d -p 5000:5000 --name jashan-backend us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}"
 
