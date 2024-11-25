@@ -11,48 +11,36 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}']
 
-  # Step 3: Setup SSH and deploy to VM
+  # Step 3: SSH into Compute Engine and update the container
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     secretEnv: ['PRIVATE_KEY', 'PUBLIC_KEY']
     args:
-      - '-e'  # Exit on error
       - '-c'
       - |
-        # Create SSH directory
+        # Setup SSH keys
+        echo "$$PRIVATE_KEY" | base64 -d > /workspace/id_rsa
+        echo "$$PUBLIC_KEY" | base64 -d > /workspace/id_rsa.pub
+        chmod 600 /workspace/id_rsa
+        chmod 644 /workspace/id_rsa.pub
+        
+        # Setup SSH configuration
         mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
-
-        # Decode and save SSH keys
-        echo "$$PRIVATE_KEY" > ~/.ssh/id_rsa.b64
-        base64 --decode ~/.ssh/id_rsa.b64 > ~/.ssh/id_rsa 2>/dev/null
-        echo "$$PUBLIC_KEY" > ~/.ssh/id_rsa.pub.b64
-        base64 --decode ~/.ssh/id_rsa.pub.b64 > ~/.ssh/id_rsa.pub 2>/dev/null
-
-        # Set correct permissions
-        chmod 600 ~/.ssh/id_rsa
-        chmod 644 ~/.ssh/id_rsa.pub
-
-        # Get instance IP address
-        INSTANCE_IP=$(gcloud compute instances describe jashan-backend-vm \
-          --zone=us-central1-a \
-          --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
-
-        # Add instance IP to known hosts
-        ssh-keyscan -H "$INSTANCE_IP" > ~/.ssh/known_hosts 2>/dev/null
-
-        # Deploy using gcloud compute ssh
+        
+        # Add VM to known hosts using hostname
+        ssh-keyscan -H jashan-backend-vm.us-central1-a.c.eng-oven-435418-i5.internal >> ~/.ssh/known_hosts
+        
+        echo "Updating backend container on Compute Engine..."
         gcloud compute ssh jashan-backend-vm \
           --zone=us-central1-a \
-          --project=eng-oven-435418-i5 \
-          --ssh-key-file=~/.ssh/id_rsa \
+          --ssh-key-file=/workspace/id_rsa \
           --strict-host-key-checking=no \
-          --quiet \
-          --command="docker pull us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA} && \
-                    docker stop backend-container || true && \
-                    docker rm backend-container || true && \
-                    docker run -d --name backend-container -p 5000:5000 \
-                      us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}"
+          --project=eng-oven-435418-i5 \
+          --tunnel-through-iap \
+          --command="sudo docker stop backend-container || true && \
+                    sudo docker rm backend-container || true && \
+                    sudo docker pull us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA} && \
+                    sudo docker run -d -p 5000:5000 --name backend-container us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}"
 
 availableSecrets:
   secretManager:
