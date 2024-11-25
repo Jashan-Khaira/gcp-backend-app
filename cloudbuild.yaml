@@ -10,9 +10,15 @@ steps:
   # Step 3: SSH into Compute Engine and update the container
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: bash
+    secretEnv:
+      - 'SSH_PRIVATE_KEY'
     args:
       - '-c'
       - |
+        # Save the private key to a file
+        echo "$SSH_PRIVATE_KEY" > /workspace/id_rsa
+        chmod 600 /workspace/id_rsa
+
         # Add SSH key to known hosts
         ssh-keyscan -H jashan-backend-vm >> ~/.ssh/known_hosts
 
