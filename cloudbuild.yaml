@@ -1,6 +1,3 @@
-substitutions:
-  _PRIVATE_KEY: 'gcloud secrets versions access 1 --secret="my-ssh-private-key" --format="get(payload.data)" | tr "_-" "/+" | base64 -d'
-
 steps:
   # Step 1: Build the container image
   - name: 'gcr.io/cloud-builders/docker'
@@ -13,11 +10,12 @@ steps:
   # Step 3: SSH into Compute Engine and update the container
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: bash
-    env:
-      - 'PRIVATE_KEY=${_PRIVATE_KEY}'
     args:
       - '-c'
       - |
+        # Access the private key from Secret Manager
+        PRIVATE_KEY=$(gcloud secrets versions access 1 --secret="my-ssh-private-key" --format="get(payload.data)" | tr "_-" "/+" | base64 -d)
+        
         # Save the private key to a file
         echo "$PRIVATE_KEY" > /workspace/id_rsa
         chmod 600 /workspace/id_rsa
