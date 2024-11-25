@@ -1,7 +1,3 @@
-secrets:
-  - secretEnv: 
-      MY_SSH_PRIVATE_KEY: "projects/851164891096/secrets/my-ssh-private-key/versions/1"
-
 steps:
   # Step 1: Build the container image
   - name: 'gcr.io/cloud-builders/docker'
@@ -17,23 +13,29 @@ steps:
     args:
       - '-c'
       - |
-        echo "Using SSH key from Secrets Manager to update backend container on Compute Engine..."
+        echo "Fetching SSH private key from Secret Manager..."
+        # Fetch the private key from Secret Manager and base64 decode it
+        PRIVATE_KEY=$(gcloud secrets versions access 1 --secret="my-ssh-private-key" --project="${PROJECT_ID}" --format='get(payload.data)' | tr '_-' '/+' | base64 -d)
 
-        # Store the private key from Secret Manager into a file
-        echo "$MY_SSH_PRIVATE_KEY" > /workspace/id_rsa
+        # Save the private key to a file
+        echo "$PRIVATE_KEY" > /workspace/id_rsa
         chmod 600 /workspace/id_rsa
 
+        # Add SSH key to known hosts
+        ssh-keyscan -H jashan-backend-vm >> ~/.ssh/known_hosts
+
+        echo "Updating backend container on Compute Engine..."
         # SSH into the Compute Engine instance and update the Docker container
         gcloud compute ssh jashan-backend-vm \
           --zone=us-central1-a \
           --ssh-key-file=/workspace/id_rsa \
-          --command="
+          --command=" 
             sudo docker stop backend-container || true && \
             sudo docker rm backend-container || true && \
             sudo docker pull us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA} && \
             sudo docker run -d -p 5000:5000 --name backend-container us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}
           "
-
+        
 options:
   logging: CLOUD_LOGGING_ONLY
 
