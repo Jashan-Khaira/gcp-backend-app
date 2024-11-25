@@ -3,7 +3,7 @@ secrets:
       MY_SSH_PRIVATE_KEY: "projects/851164891096/secrets/my-ssh-private-key/versions/1"
 
 steps:
-  # Step 1: Build the container image
+  # Step 1: Build the container images
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}', '.']
 
