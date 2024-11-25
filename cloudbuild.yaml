@@ -36,6 +36,8 @@ steps:
 
 options:
   logging: CLOUD_LOGGING_ONLY
+  substitutions:
+    PRIVATE_KEY: 'gcloud secrets versions access 1 --secret="my-ssh-private-key" --format="get(payload.data)" | tr "_-" "/+" | base64 -d'
 
 images:
   - 'us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}'
