@@ -1,5 +1,6 @@
 secrets:
-  - secretManager: "projects/851164891096/secrets/my-ssh-private-key/versions/1"
+  - secretEnv: 
+      MY_SSH_PRIVATE_KEY: "projects/851164891096/secrets/my-ssh-private-key/versions/1"
 
 steps:
   # Step 1: Build the container image
