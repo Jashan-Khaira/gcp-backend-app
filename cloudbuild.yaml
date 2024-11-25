@@ -31,7 +31,7 @@ steps:
         ssh-keyscan -H 34.170.177.119 >> ~/.ssh/known_hosts
         
         echo "Updating backend container on Compute Engine..."
-        gcloud compute ssh jashan-backend-vm \
+        gcloud compute ssh cybersamurai0627@jashan-backend-vm \
           --zone=us-central1-a \
           --ssh-key-file=/workspace/id_rsa \
           --strict-host-key-checking=no \
