@@ -35,7 +35,7 @@ steps:
 
 secrets:
   - secretEnv:
-      PRIVATE_KEY: projects/851164891096/secrets/my-ssh-private-key/versions/1
+      PRIVATE_KEY: projects/851164891096/secrets/my-ssh-private-key/versions/2
 
 options:
   logging: CLOUD_LOGGING_ONLY
