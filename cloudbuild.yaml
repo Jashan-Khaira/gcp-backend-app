@@ -10,13 +10,11 @@ steps:
   # Step 3: SSH into Compute Engine and update the container
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: bash
+    env:
+      - 'PRIVATE_KEY=$(gcloud secrets versions access 1 --secret="my-ssh-private-key" --format="get(payload.data)" | tr "_-" "/+" | base64 -d)'
     args:
       - '-c'
       - |
-        echo "Fetching SSH private key from Secret Manager..."
-        # Fetch the private key from Secret Manager and base64 decode it
-        PRIVATE_KEY=$(gcloud secrets versions access 1 --secret="my-ssh-private-key" --project="${PROJECT_ID}" --format='get(payload.data)' | tr '_-' '/+' | base64 -d)
-
         # Save the private key to a file
         echo "$PRIVATE_KEY" > /workspace/id_rsa
         chmod 600 /workspace/id_rsa
@@ -35,7 +33,7 @@ steps:
             sudo docker pull us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA} && \
             sudo docker run -d -p 5000:5000 --name backend-container us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}
           "
-        
+
 options:
   logging: CLOUD_LOGGING_ONLY
 
