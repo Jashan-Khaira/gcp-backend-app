@@ -1,5 +1,9 @@
 steps:
-  # Step 1: Build the container images
+  # Step 0: Configure docker to use gcloud credentials
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['auth', 'configure-docker', 'us-central1-docker.pkg.dev']
+
+  # Step 1: Build the container image
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA}', '.']
 
