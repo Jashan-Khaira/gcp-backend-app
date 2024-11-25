@@ -28,7 +28,7 @@ steps:
         mkdir -p ~/.ssh
         
         # Add VM to known hosts using hostname
-        ssh-keyscan -H jashan-backend-vm.us-central1-a.c.eng-oven-435418-i5.internal >> ~/.ssh/known_hosts
+        ssh-keyscan -H 34.170.177.119 >> ~/.ssh/known_hosts
         
         echo "Updating backend container on Compute Engine..."
         gcloud compute ssh jashan-backend-vm \
