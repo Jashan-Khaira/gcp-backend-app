@@ -1,3 +1,6 @@
+secrets:
+  - secretManager: "projects/851164891096/secrets/my-ssh-private-key/versions/1"
+
 steps:
   # Step 1: Build the container image
   - name: 'gcr.io/cloud-builders/docker'
@@ -13,19 +16,16 @@ steps:
     args:
       - '-c'
       - |
-        echo "Generating SSH key for Cloud Build..."
-        # Generate a new SSH key pair for Cloud Build
-        ssh-keygen -t rsa -f /builder/home/.ssh/id_rsa -N "" -q
-        # Add the public key to the Compute Engine instance's metadata
-        gcloud compute instances add-metadata jashan-backend-vm \
-          --zone=us-central1-a \
-          --metadata=ssh-keys="$(cat /builder/home/.ssh/id_rsa.pub)"
-        
-        echo "Updating backend container on Compute Engine..."
+        echo "Using SSH key from Secrets Manager to update backend container on Compute Engine..."
+
+        # Store the private key from Secret Manager into a file
+        echo "$MY_SSH_PRIVATE_KEY" > /workspace/id_rsa
+        chmod 600 /workspace/id_rsa
+
         # SSH into the Compute Engine instance and update the Docker container
         gcloud compute ssh jashan-backend-vm \
           --zone=us-central1-a \
-          --ssh-key-file=/builder/home/.ssh/id_rsa \
+          --ssh-key-file=/workspace/id_rsa \
           --command="
             sudo docker stop backend-container || true && \
             sudo docker rm backend-container || true && \
