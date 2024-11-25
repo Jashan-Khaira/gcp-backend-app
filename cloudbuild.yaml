@@ -19,8 +19,8 @@ steps:
       - |
         echo "Using SSH key from Secrets Manager to update backend container on Compute Engine..."
 
-        # Store the private key from Secret Manager into a file
-        echo "$MY_SSH_PRIVATE_KEY" > /workspace/id_rsa
+        # Decode the base64 private key and save it to a file
+        echo "$MY_SSH_PRIVATE_KEY" | base64 --decode > /workspace/id_rsa
         chmod 600 /workspace/id_rsa
 
         # SSH into the Compute Engine instance and update the Docker container
