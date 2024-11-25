@@ -27,16 +27,8 @@ steps:
         # Setup SSH configuration
         mkdir -p ~/.ssh
         
-        # Get the VM's IP and store in a variable
-        export VM_IP=$(gcloud compute instances describe jashan-backend-vm --zone=us-central1-a --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
-        
-        # Add VM's IP to known hosts
-        if [ -n "$VM_IP" ]; then
-          ssh-keyscan -H "$VM_IP" >> ~/.ssh/known_hosts
-        else
-          echo "Failed to get VM IP address"
-          exit 1
-        fi
+        # Add VM to known hosts using hostname
+        ssh-keyscan -H jashan-backend-vm.us-central1-a.c.eng-oven-435418-i5.internal >> ~/.ssh/known_hosts
         
         echo "Updating backend container on Compute Engine..."
         gcloud compute ssh jashan-backend-vm \
@@ -44,6 +36,7 @@ steps:
           --ssh-key-file=/workspace/id_rsa \
           --strict-host-key-checking=no \
           --project=eng-oven-435418-i5 \
+          --tunnel-through-iap \
           --command="sudo docker stop backend-container || true && \
                     sudo docker rm backend-container || true && \
                     sudo docker pull us-central1-docker.pkg.dev/eng-oven-435418-i5/jashan-backend-repo/jashan-backend:${SHORT_SHA} && \
